@@ -1,6 +1,10 @@
 # HomeAgent
 
-This is a PoC in much the same style as OpenClaw/TinyClaw,NanoClaw, but using IRC as the communication channel. This allows us to have passwords/TLS on communications without having to rely on [large company chat/data-harvesting solution]. It also opens up the possibility of having several agents running from different servers collaboratively working on a task via the same IRC network. Why IRC? Because I'm old and remember using it a lot and it _just works_. However I've tried to separate the communication medium from the agents, opening up the possibility of moving to Jabber or other solutions in future, like [proprietary chat solution].
+![HomeAgent Logo](images/logo.png)
+
+This is a PoC in much the same style as OpenClaw/TinyClaw,NanoClaw, but using IRC as the communication channel. This allows us to have passwords/TLS on communications without having to rely on _large company chat/data-harvesting solution_. It also opens up the possibility of having several agents running from different servers collaboratively working on a task via the same IRC network. 
+
+Why IRC? Because I'm old and remember using it a lot and it _just works_. However I've tried to separate the communication medium from the agents, opening up the possibility of moving to Jabber or other solutions in future, like _proprietary chat solution_.
 
 All of this is is targeting self-hosting for the moment, just to keep costs down (except for hardware, unfortunately). So there are some caveats to how it works.
 
@@ -8,7 +12,7 @@ Each agent is it's own Docker container, it has a PERSONALITY.md, and a metadata
 
 Currently each agent has access to some tools, and the ability to run python code or shell commands in it's own container. There is a shared volume that allows agents to pass files to each other that wouldn't fit in an IRC message, if needed, or perhaps to work on the same git tree - i've not explored that yet.
 
-This is absolutely a work in progress.
+This is absolutely a work in progress. It works, but as is the same with OpenClaw/TinyClaw/NanoClaw, I don't know what to _do_ with this yet.
 
 An example of how this all works:
 ```
@@ -39,18 +43,18 @@ graph TD
     TheLounge <--> IRC[ngIRCd IRC Server]
     
     subgraph "Agent Container (e.g., Coordinator)"
-        IRC <--> Bridge[IRC Bridge]
-        Bridge <--> Loop[Agent Loop]
+        Bridge[IRC Bridge] <--> Loop[Agent Loop]
         Loop <--> LLM[Ollama / LLM]
         Loop <--> Tools[Tools: FS, CMD, Search]
     end
+    IRC <--> Bridge
 
     subgraph "Specialized Container: Creator"
-        IRC <--> CBridge[IRC Bridge]
-        CBridge <--> CLoop[Agent Loop]
+        CBridge[IRC Bridge] <--> CLoop[Agent Loop]
         CLoop <--> Docker[Docker Socket]
         CLoop -.-> Spawns[Spawn New Agent Containers]
     end
+    IRC <--> CBridge
     
     Spawns --> AgentN[New Agent Container]
     AgentN <--> IRC
