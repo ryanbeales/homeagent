@@ -1,0 +1,40 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.env
+
+# Data directory runtime files
+data/chat_history.json
+data/archive/
+data/logs/
+data/memory/
+data/knowledge_*/
+
+# Ignore all agents except the core system agents necessary for bootstrap
+data/agents/*
+!data/agents/Coordinator/
+!data/agents/Creator/
+
+# Ignore runtime data generated specifically inside system agents
+data/agents/*/memory/
+data/agents/*/knowledge_*/
+data/agents/*/*.log
+
+# The Lounge auto-generated files
+data/thelounge/vapid.json
+
+# Agent instructions and skills - not related to this project
+.agent/
+
+# Pytest cache
+.pytest_cache
+
+# Pytest coverage
+.coverage

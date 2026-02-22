@@ -1,0 +1,5 @@
+{
+  "name": "Coordinator",
+  "role": "System Coordinator — fallback handler for unclaimed tasks",
+  "claim_keywords": []
+}

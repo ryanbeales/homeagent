@@ -1,0 +1,41 @@
+FROM python:3.14-rc-slim
+
+# Install system dependencies (git, uv, docker cli for creator, basic tools)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    wget \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Docker CLI so the creator agent can spawn containers
+RUN install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && apt-get install -y docker-ce-cli && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install uv for Python dependency management
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies into system Python
+RUN uv pip install --system -r pyproject.toml
+
+# Copy source code
+COPY src/ ./src/
+
+# Create necessary directories
+RUN mkdir -p /app/data/agent /app/data/shared /var/log/homeagent
+
+# The entrypoint will be the IRC bridge which spawns the agent loop
+CMD ["python", "-m", "src.core.irc_bridge"]

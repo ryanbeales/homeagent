@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # IRC Server
+  ircserver:
+    image: linuxserver/ngircd:latest
+    container_name: ircserver
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./data/ngircd:/config
+    ports:
+      - 6667:6667
+    restart: unless-stopped
+
+  # IRC Web UI
+  thelounge:
+    image: linuxserver/thelounge:latest
+    container_name: thelounge
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./data/thelounge:/config
+    ports:
+      - 9000:9000
+    restart: unless-stopped
+    depends_on:
+      - ircserver
+
+  # Coordinator Agent
+  agent-coordinator:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    container_name: agent-coordinator
+    environment:
+      - AGENT_NAME=coordinator
+      - IRC_SERVER=ircserver
+      - IRC_PORT=6667
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - CHAT_CHANNEL=#agents
+    volumes:
+      - ./data/agents/coordinator:/app/data/agent
+      - ./data/agents:/app/data/agents:ro
+      - ./data/shared:/app/data/shared
+    restart: always
+    depends_on:
+      - ircserver
+
+  # Creator Agent
+  agent-creator:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    container_name: agent-creator
+    environment:
+      - AGENT_NAME=creator
+      - IRC_SERVER=ircserver
+      - IRC_PORT=6667
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - CHAT_CHANNEL=#agents
+      - HOST_PROJECT_ROOT=${PWD}
+    volumes:
+      - ./data/agents/creator:/app/data/agent
+      - ./data/agents:/app/data/agents
+      - ./data/shared:/app/data/shared
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    depends_on:
+      - ircserver
+
+  # Judge Agent
+  agent-judge:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    container_name: agent-judge
+    environment:
+      - AGENT_NAME=judge
+      - IRC_SERVER=ircserver
+      - IRC_PORT=6667
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - CHAT_CHANNEL=#agents
+    volumes:
+      - ./data/agents/judge:/app/data/agent
+      - ./data/agents:/app/data/agents:ro
+      - ./data/shared:/app/data/shared
+    restart: always
+    depends_on:
+      - ircserver
