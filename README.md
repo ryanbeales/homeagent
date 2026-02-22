@@ -1,12 +1,12 @@
 # HomeAgent
 
-This is a PoC in much the same style as OpenClaw/TinyClaw,NanoClaw, but using IRC as the communication channel. This allows us to have passwords/TLS on communications without having to rely on [Large Company Chat Solution]. It also opens up the possibility of having several agents running from different servers collaboratively working on a task via the same IRC network. Why IRC? Because I'm old and remember using it a lot and it _just works_. However I've tried to separate the communication medium from the agents, opening up the possibility of moving to Jabber or other solutions in future, like [proprietary chat solution].
+This is a PoC in much the same style as OpenClaw/TinyClaw,NanoClaw, but using IRC as the communication channel. This allows us to have passwords/TLS on communications without having to rely on [large company chat/data-harvesting solution]. It also opens up the possibility of having several agents running from different servers collaboratively working on a task via the same IRC network. Why IRC? Because I'm old and remember using it a lot and it _just works_. However I've tried to separate the communication medium from the agents, opening up the possibility of moving to Jabber or other solutions in future, like [proprietary chat solution].
 
-All of this is is targeting self-hosting for the moment, just to keep costs down (except for hardware, unfortunately).
+All of this is is targeting self-hosting for the moment, just to keep costs down (except for hardware, unfortunately). So there are some caveats to how it works.
 
 Each agent is it's own Docker container, it has a PERSONALITY.md, and a metadata.json that allows each agent to respond to a few key words in the channel. This is to keep token usage down as not all agents need to parse every incoming message. When an agent picks up a message they should recieve the context of the conversation also in case it's missing directly in the message itself (such as when one agent passes a user request to another agent).
 
-Currently each agent has access to some tools, and the ability to run python code or shell commands in it's own container. There is a shared volume that allows agents to pass files to each other that wouldn't fit in an IRC message.
+Currently each agent has access to some tools, and the ability to run python code or shell commands in it's own container. There is a shared volume that allows agents to pass files to each other that wouldn't fit in an IRC message, if needed, or perhaps to work on the same git tree - i've not explored that yet.
 
 This is absolutely a work in progress.
 
@@ -22,12 +22,11 @@ An example of how this all works:
 11:08 <eBPFExpert> If you don’t know the exact kernel version that the Docker container will run on, the safest way to build an eBPF program is to compile *inside* the container against the **host’s kernel headers** (or a header tree that matches the host).  The steps are:
 ```
 And it carries on with the rest of the conversation...
-```
 
 ## System Requirements
 
-- **Docker & Docker Compose**: Essential for running the isolated agent containers and system network.
-- **Ollama**: Required locally or remotely to provide the LLM backend.
+- **Docker & Docker Compose**: For running the isolated agent containers and system network.
+- **Ollama**: Required locally or remotely to provide the LLM backend. Currently I'm using the `gpt-oss:20b` model because I have hardware that allows for it. You can try with any model you like though.
 - **Searxng**: (Optional but recommended) Required to utilize the Web Search tool.
 
 ## Architecture
@@ -65,7 +64,7 @@ graph TD
 
 ## Agent Infrastructure
 
-Every agent in the HomeAgent ecosystem runs as an independent, isolated container. This isolation ensures that one agent's environment or dependencies do not interfere with another's.
+Every agent in the HomeAgent ecosystem runs as an independent, isolated container.
 
 ### The Container Model
 Each agent container follows a dual-process architecture:
@@ -101,7 +100,7 @@ The **Creator** agent is uniquely privileged with access to the Docker socket (`
 
 ## Interacting with the Agents
 
-Once the containers are running, you can chat with the agents using the built-in web client!
+Once the containers are running, you can chat with the agents using the built-in web client:
 
 1. Open your browser to The Lounge at [http://localhost:9000](http://localhost:9000).
 2. Connect to the default server (it should be pre-configured to connect to `ircserver:6667`).
@@ -109,8 +108,7 @@ Once the containers are running, you can chat with the agents using the built-in
 4. Say hello to the system!
 
 ### Delegating Tasks
-You can address specific agents by mentioning them. If you aren't sure who to talk to, ask the Coordinator:
-- `"@Coordinator what is the weather like today?"`
+You can address specific agents by mentioning them. If you aren't sure who to talk to, just ask and the responsbile agent will chime in, or the Coordinator will pick up the request and delegate it, or ask the Creator to build a new agent if needed.
 
 ### Creating New Agents
 You can ask the Creator to spin up entirely new, containerized agents on the fly! The Creator will invent a personality, save it to disk, and instantiate a new Docker container. 
@@ -122,18 +120,18 @@ The Creator will process the request and you'll see the new agent join the IRC c
 
 Agents define their personality and runtime metadata in `data/agents/<AgentName>/`. 
 
-When the `Creator` agent boots, it automatically runs a **Sync** process. If it detects any agent configurations on disk that don't have a corresponding running Docker container, it will automatically spawn them for you!
+When the `Creator` agent boots, it automatically runs a Sync process. If it detects any agent configurations on disk that don't have a corresponding running Docker container, it will automatically spawn them for you.
 
 ## Future Roadmap
 
 The ecosystem is continuously evolving. Key focus areas for future development include:
 
 ### Kubernetes Integration (Agent Operator)
-Transitioning the dynamic spawning logic from Docker-specific commands to a **Kubernetes Operator**. This will allow the Creator to work with the K8s API to manage agents as Custom Resources (CRDs), enabling better scaling and resilience across a cluster.
+Transitioning the dynamic spawning logic from Docker-specific commands to a Kubernetes Operator. This will allow the Creator to work with the K8s API to manage agents, enabling spreading the agents across multiple nodes.
 
 ### Secure Secret Management
 A robust method to provide secrets or other sensitive data (e.g., GitHub deploy keys, API keys) to agents outside of the public chat interface.
-- **Proposed approach**: Integration with K8s Secrets, HashiCorp Vault, or an encrypted local credential store that agents can query securely when needed.
+- Proposed approach: Integration with K8s Secrets, HashiCorp Vault, or an encrypted local credential store that agents can query securely when needed.
 
 ### Inter-Agent Collaboration
 Enhancing the ability for agents to form "swarms" to tackle complex, multi-step engineering tasks autonomously.
