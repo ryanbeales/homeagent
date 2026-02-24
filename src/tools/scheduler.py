@@ -160,6 +160,10 @@ class AgentScheduler:
         if self.scheduler:
             self.scheduler.shutdown()
 
+    def start(self):
+        """Explicitly start the scheduler and load jobs."""
+        _ = self.scheduler
+
 
 class ScheduleTaskTool(Tool):
     """Allows agents to schedule a message to be posted at a future time."""

@@ -212,6 +212,11 @@ async def main():
         sys.stdout.write("--- WAIT_FOR_INPUT ---\n")
         sys.stdout.flush()
 
+    # Explicitly start the scheduler so persistent jobs are loaded
+    if hasattr(agent, "scheduler_daemon"):
+        logger.info(f"Starting scheduler daemon for {agent_name}...")
+        agent.scheduler_daemon.start()
+
     while True:
         try:
             line = await loop.run_in_executor(None, sys.stdin.readline)
