@@ -38,3 +38,4 @@ data/thelounge/vapid.json
 
 # Pytest coverage
 .coverage
+data/shared/prometheus_anomaly_cache.json
