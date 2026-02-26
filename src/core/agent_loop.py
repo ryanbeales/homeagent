@@ -17,17 +17,26 @@ from src.tools.personality_tool import UpdatePersonalityTool
 
 class StdoutChatBridge:
     """A mock chat room that just prints to stdout."""
+    def __init__(self):
+        self.agent = None
+
     async def post_message(self, sender: str, message: str, room: str = None):
         # We output a structured JSON or just plain text.
         # Since the IRC bridge reads this, just text is fine, but maybe prefix with sender.
         # However, the IRC bridge knows this process belongs to one agent.
         print(message, flush=True)
         
+    async def inject_prompt(self, message: str):
+        if self.agent:
+            import asyncio
+            asyncio.create_task(self.agent.process_message(message))
+            
     def register_agent(self, agent):
-        pass
+        self.agent = agent
         
     def unregister_agent(self, name: str):
-        pass
+        if self.agent and self.agent.name == name:
+            self.agent = None
 
     async def agent_join(self, name: str):
         await self.post_message("System", f"* {name} has joined the chat")
@@ -91,6 +100,7 @@ async def main():
     # The creator agent might need CreatorTools which takes a chat_room.
     # Our stdout chat bridge is a bit of a stub, but sufficient for outputting text.
     agent.chat_room = chat_bridge
+    chat_bridge.register_agent(agent)
     
     # We must also redefine the tools that need real container implementations:
     # 1. File system (read/write in container)

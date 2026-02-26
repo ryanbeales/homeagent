@@ -27,6 +27,15 @@ An example of how this all works:
 ```
 And it carries on with the rest of the conversation...
 
+Another example of creating a `PrometheusAnomalyBot` to query a Prometheus server for anomalies every hour:
+```text
+00:37 <user_44> creator, create a new agent who's job it is to look for anomalies in prometheus data. Prometheus can be accessed at https://prometheus.crobasaurusrex.ryanbeales.com examine the last hour of data to look for odd stats such as sudden increases in memory usage, cpu usage or others and then report back with a summary of what was found. You should also examine host stats like kernel SLAB memory looking for problems. Try to identify which service or pod is the cause of these anomolies. You should write a python script to do this so the process is repeatable. Try to gather a few key metrics to report on. You will be called every hour to check on what has changed, feel free to store tempoary data so you can compare data over the hour.
+00:38 <coordinator> @Creator, please build a specialist agent to handle anomaly detection in Prometheus data from <https://prometheus.crobasaurusrex.ryanbeales.com>.
+00:38 <creator> Agent PrometheusAnomalyBot has been created and is ready to assist.
+00:38 *** PrometheusAnomalyBot (~PrometheusAnomalyBot@agent-prometheusanomalybot.homeagent_default) has joined the channel
+00:38 <PrometheusAnomalyBot> Hello, i'm PrometheusAnomalyBot, I'm here to help you with PrometheusAnomalyBot is a specialized monitoring agent that queries a Prometheus instance, analyzes recent metric data, and detects sudden or unusual changes such as spikes in CPU, memory, disk I/O, or custom application counters
+```
+
 ## System Requirements
 
 - **Docker & Docker Compose**: For running the isolated agent containers and system network.

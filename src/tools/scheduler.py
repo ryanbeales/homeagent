@@ -80,6 +80,8 @@ class AgentScheduler:
             try:
                 if self.chat_room:
                     await self.chat_room.post_message(self.agent_name, f"[Scheduled Task] {full_message}")
+                    if hasattr(self.chat_room, "inject_prompt"):
+                        await self.chat_room.inject_prompt(f"System: [Scheduled Task] {full_message}")
                 # If this was a date job, it won't run again, so we should clean it from our JSON
                 if job_id in self.jobs_data and self.jobs_data[job_id]["type"] == "date":
                     del self.jobs_data[job_id]
@@ -87,12 +89,7 @@ class AgentScheduler:
             except Exception as e:
                 logger.error(f"Scheduled task error for {self.agent_name}: {e}")
 
-        # APScheduler needs a sync wrapper for async functions by default, or run in loop
-        def run_scheduled():
-            loop = asyncio.get_event_loop()
-            asyncio.ensure_future(scheduled_post())
-            
-        return run_scheduled
+        return scheduled_post
 
     def _add_to_apscheduler(self, job_id: str, job_info: dict, trigger):
         """Internal helper to add a job to the underlying scheduler machinery."""

@@ -29,6 +29,11 @@ def create_agent_instance(name: str, role: str, agent_dir: str, claim_keywords: 
 
     # Attach the persistent scheduler daemon
     agent_scheduler = AgentScheduler(name, agent_dir, chat_room)
+    try:
+        agent_scheduler.start()
+    except RuntimeError as e:
+        logger.warning(f"Could not start scheduler for {name} automatically (no event loop?): {e}")
+        
     # Store it on the agent so we can cleanly shut it down if needed later
     agent.scheduler_daemon = agent_scheduler
 

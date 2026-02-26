@@ -1,0 +1,10 @@
+{
+    "topic": "Python Command Execution",
+    "content": "Use `uv run` to execute python commands and tools in this project. For example, `uv run python script.py`, or `uv run pytest`. This project uses `uv` for dependency management, not `poetry` or system python.",
+    "tags": [
+        "python",
+        "uv",
+        "execution",
+        "commands"
+    ]
+}
